@@ -6,9 +6,11 @@ db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(Config)  # ✅ Loads config with DB URI
+    app.config.from_object(Config)
+
     db.init_app(app)
 
-    # import your routes, models, etc. here
+    from .routes import main
+    app.register_blueprint(main)
 
     return app
