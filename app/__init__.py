@@ -1,22 +1,21 @@
-import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from flask_migrate import Migrate
-from dotenv import load_dotenv
+from flask_migrate import Migrate  # <-- import migrate here
 
 db = SQLAlchemy()
 login_manager = LoginManager()
 
 def create_app():
-    load_dotenv()  # Load from .env if present
 
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev_secret_fallback')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+    app.config['SECRET_KEY'] = 'your_secret_key'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:123456789@localhost/hungrybird_db'
 
     db.init_app(app)
-    Migrate(app, db)
+
+    migrate = Migrate(app, db)  # <-- initialize migrate here
+
     login_manager.init_app(app)
     login_manager.login_view = 'main.login'
 
