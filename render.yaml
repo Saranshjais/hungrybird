@@ -4,15 +4,18 @@ services:
     env: python
     plan: free
 
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      echo "python-3.10" > runtime.txt
+      pip install -r requirements.txt
+
     startCommand: gunicorn run:app
 
     envVars:
       - key: SECRET_KEY
         value: your_secret_key
 
-      # ✅ Let Render inject DATABASE_URL automatically from the PostgreSQL add-on
-      # Do NOT define DATABASE_URL manually if using Render’s built-in DB
+      # Let Render inject DATABASE_URL from PostgreSQL add-on
+      # Do NOT manually define it if using Render's built-in database
 
       - key: GOOGLE_MAPS_API_KEY
         value: AIzaSyAN1Y6DgLtlU24YTlp77O2gR_Lw4xiC03w
