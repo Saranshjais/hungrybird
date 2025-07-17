@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: hungry-bird
+    env: python
+    plan: free
+    buildCommand: ""
+    startCommand: gunicorn run:app
+    envVars:
+      - key: SECRET_KEY
+        value: your_secret_key
+      - key: DATABASE_URL
+        value: postgresql://postgres:123456789@localhost/hungrybird_db
+      - key: GOOGLE_MAPS_API_KEY
+        value: AIzaSyAN1Y6DgLtlU24YTlp77O2gR_Lw4xiC03w
