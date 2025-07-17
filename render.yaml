@@ -10,7 +10,9 @@ services:
     envVars:
       - key: SECRET_KEY
         value: your_secret_key
-      - key: DATABASE_URL
-        sync: false  # Render sets this automatically for PostgreSQL add-on
+
+      # ✅ Let Render inject DATABASE_URL automatically from the PostgreSQL add-on
+      # Do NOT define DATABASE_URL manually if using Render’s built-in DB
+
       - key: GOOGLE_MAPS_API_KEY
         value: AIzaSyAN1Y6DgLtlU24YTlp77O2gR_Lw4xiC03w
