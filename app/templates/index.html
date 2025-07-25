@@ -191,7 +191,7 @@
 <!-- Food Category Filter -->
 <div class="container mt-5">
   <h3 class="text-center fw-bold mb-4" style="font-size: 2rem; color: #e74c3c;">
-    🍽️ Popular Food in <span id="selectedCity">All Cities</span>
+    🍽️ Popular Food in <span class="selected-city">All Cities</span>
   </h3>
 
 <!-- Horizontal Scrollable Categories -->
@@ -285,13 +285,13 @@
   </div>
 </div>
 
-<!-- Scripts -->
 <script>
   const vendorData = {{ vendor_json | safe }};
   let map;
   let currentMarkers = [];
   let currentDisplayLimit = 6;
   let filteredVendors = [...vendorData];
+  let selectedCity = 'All Cities';
 
   function initMap() {
     const defaultCenter = { lat: 26.9124, lng: 75.7873 };
@@ -299,16 +299,18 @@
       center: defaultCenter,
       zoom: 13,
     });
-    updateVendorDisplay(filteredVendors, "All Cities");
+    updateVendorDisplay(filteredVendors, selectedCity);
   }
 
   function setCity(cityName, lat, lng) {
+    selectedCity = cityName;
     const newCenter = { lat: lat, lng: lng };
     map.setCenter(newCenter);
     map.setZoom(14);
+
     filteredVendors = vendorData.filter(v => v.city === cityName);
     currentDisplayLimit = 6;
-    updateVendorDisplay(filteredVendors, cityName);
+    updateVendorDisplay(filteredVendors, selectedCity);
   }
 
   function clearMarkers() {
@@ -316,7 +318,7 @@
     currentMarkers = [];
   }
 
-  function updateVendorDisplay(vendors, cityName) {
+  function updateVendorDisplay(vendors, displayTitle) {
     clearMarkers();
     const cardContainer = document.getElementById("vendorCards");
     cardContainer.innerHTML = '';
@@ -338,7 +340,6 @@
 
       const cardHTML = `
         <div class="col-6 col-md-4 mb-4">
-
           <div class="card">
             <img loading="lazy" src="${v.image || 'https://via.placeholder.com/400x200?text=No+Image'}" class="card-img-top" alt="${v.name}" />
             <div class="card-body">
@@ -351,23 +352,33 @@
       cardContainer.innerHTML += cardHTML;
     });
 
-    document.getElementById("selectedCity").innerText = cityName;
+    document.querySelectorAll('.selected-city').forEach(el => {
+      el.innerText = displayTitle;
+    });
   }
 
   function loadMoreVendors() {
     currentDisplayLimit += 6;
-    updateVendorDisplay(filteredVendors, document.getElementById("selectedCity").innerText);
+    updateVendorDisplay(filteredVendors, selectedCity);
   }
 
   document.getElementById("searchBox").addEventListener("input", function () {
     const query = this.value.toLowerCase();
-    filteredVendors = vendorData.filter(v =>
+
+    let scopedData = vendorData;
+    if (selectedCity !== 'All Cities') {
+      scopedData = vendorData.filter(v => v.city === selectedCity);
+    }
+
+    filteredVendors = scopedData.filter(v =>
       v.name.toLowerCase().includes(query) ||
       v.cuisine.toLowerCase().includes(query) ||
       v.city.toLowerCase().includes(query)
     );
+
     currentDisplayLimit = 6;
-    updateVendorDisplay(filteredVendors, query ? `Results for "${query}"` : "All Cities");
+    const title = query ? `Results for "${query}" in ${selectedCity}` : selectedCity;
+    updateVendorDisplay(filteredVendors, title);
   });
 
   function scrollToMap() {
@@ -417,30 +428,31 @@
     return nearest;
   }
 
-  
-  // Auto detect on load
+  // Food Category Filter (inside current city)
   document.querySelectorAll('.category').forEach(cat => {
-  cat.addEventListener('click', () => {
-    const foodKeyword = cat.getAttribute('data-food').toLowerCase();
+    cat.addEventListener('click', () => {
+      const foodKeyword = cat.getAttribute('data-food').toLowerCase();
 
-    if (foodKeyword === 'all') {
-      filteredVendors = [...vendorData];
-      updateVendorDisplay(filteredVendors, "All Foods");
-    } else {
-      filteredVendors = vendorData.filter(v =>
-        v.name.toLowerCase().includes(foodKeyword) ||
-        v.cuisine.toLowerCase().includes(foodKeyword)
-      );
-      updateVendorDisplay(filteredVendors, `Results for "${foodKeyword}"`);
-    }
+      let scopedData = vendorData;
+      if (selectedCity !== 'All Cities') {
+        scopedData = vendorData.filter(v => v.city === selectedCity);
+      }
 
-    currentDisplayLimit = 6;
+      if (foodKeyword === 'all') {
+        filteredVendors = scopedData;
+        updateVendorDisplay(filteredVendors, `${selectedCity} - All Foods`);
+      } else {
+        filteredVendors = scopedData.filter(v =>
+          v.name.toLowerCase().includes(foodKeyword) ||
+          v.cuisine.toLowerCase().includes(foodKeyword)
+        );
+        updateVendorDisplay(filteredVendors, `${selectedCity} - ${foodKeyword}`);
+      }
+
+      currentDisplayLimit = 6;
+    });
   });
-});
 
-</script>
-
-<script>
   function scrollToFoodCategory() {
     const target = document.getElementById("vendor-section");
     if (target) {
@@ -448,6 +460,7 @@
     }
   }
 </script>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAN1Y6DgLtlU24YTlp77O2gR_Lw4xiC03w&callback=initMap"></script>
