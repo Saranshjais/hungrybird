@@ -85,21 +85,23 @@
 
 
 
-    <!-- Search Controls -->
-    <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 mb-5 search-controls">
-      <div class="dropdown">
-        <button class="btn btn-light dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown">
-          <i class="fas fa-map-marker-alt me-1"></i> Select City
-        </button>
-        <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="#" onclick="setCity('Jaipur', 26.9124, 75.7873)">🏯 Jaipur</a></li>
-          <li><a class="dropdown-item" href="#" onclick="setCity('Delhi', 28.6139, 77.2090)">🏛 Delhi</a></li>
-          <li><a class="dropdown-item" href="#" onclick="setCity('Mumbai', 19.0760, 72.8777)">🌆 Mumbai</a></li>
-          <li><a class="dropdown-item" href="#" onclick="detectLocation()">📍 Detect Location</a></li>
-        </ul>
-      </div>
-      <input type="text" class="form-control shadow-sm w-50 rounded-3" id="searchBox" placeholder="Search vendors, food..." />
-    </div>
+   <!-- Search Controls -->
+<div class="d-flex flex-wrap justify-content-center align-items-center gap-3 mb-5 search-controls">
+  <div class="dropdown">
+    <button id="cityDropdownBtn" class="btn btn-light dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown">
+      <i class="fas fa-map-marker-alt me-1"></i> <span class="selected-city">Select City</span>
+    </button>
+    <ul class="dropdown-menu">
+      <li><a class="dropdown-item" href="#" onclick="setCity('Jaipur', 26.9124, 75.7873, '🏯 Jaipur')">🏯 Jaipur</a></li>
+      <li><a class="dropdown-item" href="#" onclick="setCity('Delhi', 28.6139, 77.2090, '🏛 Delhi')">🏛 Delhi</a></li>
+      <li><a class="dropdown-item" href="#" onclick="setCity('Mumbai', 19.0760, 72.8777, '🌆 Mumbai')">🌆 Mumbai</a></li>
+      <li><a class="dropdown-item" href="#" onclick="detectLocation()">📍 Detect Location</a></li>
+    </ul>
+  </div>
+
+  <input type="text" class="form-control shadow-sm w-50 rounded-3" id="searchBox" placeholder="Search vendors, food..." />
+</div>
+
 
         <!-- Feature Cards -->
 <div class="row justify-content-center feature-row">
@@ -311,6 +313,18 @@
     filteredVendors = vendorData.filter(v => v.city === cityName);
     currentDisplayLimit = 6;
     updateVendorDisplay(filteredVendors, selectedCity);
+
+    // Update city name on the dropdown button
+    const cityButton = document.querySelector('.dropdown-toggle');
+    if (cityButton) {
+      let icon = '📍';
+      if (cityName === 'Jaipur') icon = '🏯';
+      else if (cityName === 'Delhi') icon = '🏛';
+      else if (cityName === 'Mumbai') icon = '🌆';
+      cityButton.innerHTML = `${icon} ${cityName}`;
+    }
+
+    scrollToVendors();
   }
 
   function clearMarkers() {
@@ -391,6 +405,9 @@
 
   function detectLocation(auto = false) {
     const spinner = document.getElementById('locationSpinnerOverlay');
+    const cityButton = document.querySelector('.dropdown-toggle');
+    if (cityButton) cityButton.innerHTML = '📍 Detecting...';
+
     spinner.style.display = 'flex';
 
     navigator.geolocation.getCurrentPosition(
@@ -403,6 +420,7 @@
       },
       (error) => {
         spinner.style.display = 'none';
+        if (cityButton) cityButton.innerHTML = '📍 Select City';
         if (!auto) {
           const errorModal = new bootstrap.Modal(document.getElementById('locationErrorModal'));
           errorModal.show();
@@ -428,7 +446,6 @@
     return nearest;
   }
 
-  // Food Category Filter (inside current city)
   document.querySelectorAll('.category').forEach(cat => {
     cat.addEventListener('click', () => {
       const foodKeyword = cat.getAttribute('data-food').toLowerCase();
@@ -460,6 +477,7 @@
     }
   }
 </script>
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
