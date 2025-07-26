@@ -18,18 +18,24 @@ main = Blueprint('main', __name__)
 @main.route('/')
 def index():
     vendor_data = []
-    with open('google_places_vendors.csv', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            vendor_data.append({
-                'name': row['name'],
-                'lat': float(row['latitude']),
-                'lng': float(row['longitude']),
-                'city': row.get('city', 'Unknown'),
-                'rating': float(row.get('rating', 4.0)),
-                'image': row.get('image', ''),
-                'cuisine': row.get('cuisine', 'Street Food')
-            })
+    try:
+        with open('google_places_vendors.csv', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                try:
+                    vendor_data.append({
+                        'name': row.get('name', 'Unknown'),
+                        'lat': float(row.get('latitude', 0.0)),
+                        'lng': float(row.get('longitude', 0.0)),
+                        'city': row.get('city', 'Unknown'),
+                        'rating': float(row.get('rating', 4.0) or 4.0),
+                        'image': row.get('image', ''),
+                        'cuisine': row.get('cuisine', 'Street Food')
+                    })
+                except Exception as e:
+                    print(f"Skipping invalid row: {row} | Error: {e}")
+    except FileNotFoundError:
+        print("CSV file not found. Please make sure it's in the root directory.")
 
     return render_template('index.html', vendor_json=json.dumps(vendor_data))
 
