@@ -95,6 +95,7 @@
       <li><a class="dropdown-item" href="#" onclick="setCity('Jaipur', 26.9124, 75.7873, '🏯 Jaipur')">🏯 Jaipur</a></li>
       <li><a class="dropdown-item" href="#" onclick="setCity('Delhi', 28.6139, 77.2090, '🏛 Delhi')">🏛 Delhi</a></li>
       <li><a class="dropdown-item" href="#" onclick="setCity('Mumbai', 19.0760, 72.8777, '🌆 Mumbai')">🌆 Mumbai</a></li>
+      <li><a class="dropdown-item" href="#" onclick="setCity('Indore', 19.0760, 72.8777, '🌆 Mumbai')">🌆 Indore</a></li>
       <li><a class="dropdown-item" href="#" onclick="detectLocation()">📍 Detect Location</a></li>
     </ul>
   </div>
@@ -197,25 +198,66 @@
   </h3>
 
 <!-- Horizontal Scrollable Categories -->
-<div class="container-fluid px-3 py-2 overflow-auto" style="white-space: nowrap;">
+<div class="container-fluid px-3 py-2 overflow-auto bg-light border-bottom" style="white-space: nowrap;">
   <div class="d-inline-flex" id="foodCategories">
     {% set categories = [
       ('All', 'all.png'),
+      ('Street Food', 'street-food.png'),
+      ('Fast Food', 'fast-food.png'),
       ('North Indian', 'north-indian.png'),
+      ('South Indian', 'south-indian.png'),
+      ('Chinese', 'chinese.png'),
+      ('Italian', 'italian.png'),
+      ('Mughlai', 'mughlai.png'),
+      ('Punjabi', 'punjabi.png'),
+      ('Gujarati', 'gujarati.png'),
+      ('Rajasthani', 'rajasthani.png'),
+      ('Hyderabadi', 'hyderabadi.png'),
       ('Biryani', 'biryani.png'),
       ('Pizza', 'pizza.png'),
+      ('Burger', 'burger.png'),
+      ('Chaat', 'chaat.png'),
+      ('Samosa', 'samosa.png'),
+      ('Kachori', 'kachori.png'),
+      ('Dosa', 'dosa.png'),
+      ('Idli', 'idli.png'),
+      ('Vada', 'vada.png'),
       ('Momo', 'momo.png'),
-      ('Pav Bhaji', 'pav-bhaji.png'),
       ('Noodles', 'noodle.png'),
+      ('Pasta', 'pasta.png'),
+      ('Thali', 'thali.png'),
       ('Paratha', 'paratha.png'),
-      ('Chole Bhature', 'chole-bhature.png')
+      ('Pav Bhaji', 'pav-bhaji.png'),
+      ('Chole Bhature', 'chole-bhature.png'),
+      ('Tandoori', 'tandoori.png'),
+      ('Ice Cream', 'ice-cream.png'),
+      ('Juice', 'juice.png'),
+      ('Lassi', 'lassi.png'),
+      ('Coffee', 'coffee.png'),
+      ('Tea', 'tea.png'),
+      ('Bakery', 'bakery.png'),
+      ('Kebab', 'kebab.png'),
+      ('Wrap', 'wrap.png'),
+      ('Rolls', 'rolls.png'),
+      ('Fries', 'fries.png'),
+      ('Falooda', 'falooda.png'),
+      ('Kulfi', 'kulfi.png'),
+      ('Panipuri', 'panipuri.png'),
+      ('Puran Poli', 'puran-poli.png'),
+      ('Misal Pav', 'misal-pav.png'),
+      ('Egg Roll', 'egg-roll.png'),
+      ('Fish Fry', 'fish-fry.png'),
+      ('Sandwich', 'sandwich.png'),
+      ('Appam', 'appam.png'),
+      ('Uttapam', 'uttapam.png'),
+      ('Rajma Chawal', 'rajma-chawal.png')
     ] %}
 
     {% for name, image in categories %}
-    <div class="text-center me-3 category" data-food="{{ name | lower }}">
-      <img src="{{ url_for('static', filename=image) }}" alt="{{ name }}">
-      <p>{{ name }}</p>
-    </div>
+      <div class="text-center me-3 category" data-food="{{ name | lower }}">
+        <img src="{{ url_for('static', filename=image) }}" alt="{{ name }}" class="img-fluid rounded-circle mb-1" style="width: 50px; height: 50px; object-fit: cover;">
+        <p class="small m-0">{{ name }}</p>
+      </div>
     {% endfor %}
   </div>
 </div>
@@ -314,7 +356,6 @@
     currentDisplayLimit = 6;
     updateVendorDisplay(filteredVendors, selectedCity);
 
-    // Update city name on the dropdown button
     const cityButton = document.querySelector('.dropdown-toggle');
     if (cityButton) {
       let icon = '📍';
@@ -446,28 +487,57 @@
     return nearest;
   }
 
-  document.querySelectorAll('.category').forEach(cat => {
-    cat.addEventListener('click', () => {
-      const foodKeyword = cat.getAttribute('data-food').toLowerCase();
+  // 🟠 Category Click Handler
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.category').forEach(cat => {
+      cat.addEventListener('click', () => {
+        const foodKeyword = cat.getAttribute('data-food').toLowerCase();
 
-      let scopedData = vendorData;
-      if (selectedCity !== 'All Cities') {
-        scopedData = vendorData.filter(v => v.city === selectedCity);
-      }
+        let scopedData = vendorData;
+        if (selectedCity !== 'All Cities') {
+          scopedData = vendorData.filter(v => v.city === selectedCity);
+        }
 
-      if (foodKeyword === 'all') {
-        filteredVendors = scopedData;
-        updateVendorDisplay(filteredVendors, `${selectedCity} - All Foods`);
-      } else {
-        filteredVendors = scopedData.filter(v =>
-          v.name.toLowerCase().includes(foodKeyword) ||
-          v.cuisine.toLowerCase().includes(foodKeyword)
-        );
-        updateVendorDisplay(filteredVendors, `${selectedCity} - ${foodKeyword}`);
-      }
+        if (foodKeyword === 'all') {
+          filteredVendors = scopedData;
+          updateVendorDisplay(filteredVendors, `${selectedCity} - All Foods`);
+        } else {
+          filteredVendors = scopedData.filter(v =>
+            v.name.toLowerCase().includes(foodKeyword) ||
+            v.cuisine.toLowerCase().includes(foodKeyword)
+          );
+          updateVendorDisplay(filteredVendors, `${selectedCity} - ${foodKeyword}`);
+        }
 
-      currentDisplayLimit = 6;
+        currentDisplayLimit = 6;
+      });
     });
+
+    // 🟢 Auto-scroll for horizontal food categories
+    const container = document.getElementById("foodCategories");
+
+    if (container) {
+      let scrollStep = 1;
+      let scrollInterval = setInterval(() => {
+        if (container.scrollLeft >= container.scrollWidth - container.clientWidth) {
+          container.scrollLeft = 0;
+        } else {
+          container.scrollLeft += scrollStep;
+        }
+      }, 20); // Adjust for scroll speed
+
+      // Pause on hover/touch
+      container.addEventListener("mouseenter", () => clearInterval(scrollInterval));
+      container.addEventListener("mouseleave", () => {
+        scrollInterval = setInterval(() => {
+          if (container.scrollLeft >= container.scrollWidth - container.clientWidth) {
+            container.scrollLeft = 0;
+          } else {
+            container.scrollLeft += scrollStep;
+          }
+        }, 20);
+      });
+    }
   });
 
   function scrollToFoodCategory() {
@@ -477,6 +547,7 @@
     }
   }
 </script>
+
 
 
 
