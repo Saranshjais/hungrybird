@@ -2,7 +2,7 @@ import csv
 import requests
 import time
 
-API_KEY = "AIzaSyAN1Y6DgLtlU24YTlp77O2gR_Lw4xiC03w"  # Replace with your actual key
+API_KEY = "YOUR_GOOGLE_API_KEY"  # Replace with your actual key
 CSV_FILE = "google_places_vendors.csv"
 
 def get_photo_url(vendor_name, lat, lng, city):
