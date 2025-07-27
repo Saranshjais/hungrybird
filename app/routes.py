@@ -26,7 +26,7 @@ def index():
                 'lat': float(row['latitude']),
                 'lng': float(row['longitude']),
                 'city': row.get('city', 'Unknown'),
-                'rating': float(row.get('rating', 4.0)),
+                'rating': float(row['rating']) if row.get('rating') and row['rating'].strip() else 4.0,
                 'image': row.get('image', ''),
                 'cuisine': row.get('cuisine', 'Street Food')
             })
