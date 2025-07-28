@@ -95,7 +95,8 @@
       <li><a class="dropdown-item" href="#" onclick="setCity('Jaipur', 26.9124, 75.7873, '🏯 Jaipur')">🏯 Jaipur</a></li>
       <li><a class="dropdown-item" href="#" onclick="setCity('Delhi', 28.6139, 77.2090, '🏛 Delhi')">🏛 Delhi</a></li>
       <li><a class="dropdown-item" href="#" onclick="setCity('Mumbai', 19.0760, 72.8777, '🌆 Mumbai')">🌆 Mumbai</a></li>
-      <li><a class="dropdown-item" href="#" onclick="detectLocation()">📍 Detect Location</a></li>
+      <li><a class="dropdown-item" href="#">📍 Detect Location</a></li>
+
     </ul>
   </div>
 
@@ -202,7 +203,6 @@
     {% set categories = [
       ('All', 'all.png'),
       ('Street Food', 'street-food.png'),
-      ('Fast Food', 'fast-food.png'),
       ('North Indian', 'north-indian.png'),
       ('South Indian', 'south-indian.png'),
       ('Chinese', 'chinese.png'),
@@ -221,7 +221,6 @@
       ('Pav Bhaji', 'pav-bhaji.png'),
       ('Chole Bhature', 'chole-bhature.png'),
       ('Wrap', 'wrap.png'),
-      ('Rolls', 'rolls.png'),
       ('Falooda', 'falooda.png'),
       ('Panipuri', 'panipuri.png'),
       ('Sandwich', 'sandwich.png'),
@@ -313,7 +312,7 @@
   let selectedCity = 'All Cities';
 
   function initMap() {
-    const defaultCenter = { lat: 26.9124, lng: 75.7873 };
+    const defaultCenter = { lat: 26.9124, lng: 75.7873 }; // Jaipur
     map = new google.maps.Map(document.getElementById("map"), {
       center: defaultCenter,
       zoom: 13,
@@ -323,7 +322,7 @@
 
   function setCity(cityName, lat, lng) {
     selectedCity = cityName;
-    const newCenter = { lat: lat, lng: lng };
+    const newCenter = { lat, lng };
     map.setCenter(newCenter);
     map.setZoom(14);
 
@@ -392,50 +391,26 @@
     updateVendorDisplay(filteredVendors, selectedCity);
   }
 
-  document.getElementById("searchBox").addEventListener("input", function () {
-    const query = this.value.toLowerCase();
-
-    let scopedData = vendorData;
-    if (selectedCity !== 'All Cities') {
-      scopedData = vendorData.filter(v => v.city === selectedCity);
-    }
-
-    filteredVendors = scopedData.filter(v =>
-      v.name.toLowerCase().includes(query) ||
-      v.cuisine.toLowerCase().includes(query) ||
-      v.city.toLowerCase().includes(query)
-    );
-
-    currentDisplayLimit = 6;
-    const title = query ? `Results for "${query}" in ${selectedCity}` : selectedCity;
-    updateVendorDisplay(filteredVendors, title);
-  });
-
-  function scrollToMap() {
-    document.getElementById('mapSection').scrollIntoView({ behavior: 'smooth' });
-  }
-
-  function scrollToVendors() {
-    document.getElementById('popularVendors').scrollIntoView({ behavior: 'smooth' });
-  }
-
   function detectLocation(auto = false) {
     const spinner = document.getElementById('locationSpinnerOverlay');
     const cityButton = document.querySelector('.dropdown-toggle');
     if (cityButton) cityButton.innerHTML = '📍 Detecting...';
-
-    spinner.style.display = 'flex';
+    if (spinner) spinner.style.display = 'flex';
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        spinner.style.display = 'none';
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
         const nearest = findNearestCity(lat, lng);
-        if (nearest) setCity(nearest.city, nearest.lat, nearest.lng);
+        if (nearest) {
+          setCity(nearest.city, nearest.lat, nearest.lng);
+        } else {
+          if (cityButton) cityButton.innerHTML = '📍 Select City';
+        }
+        if (spinner) spinner.style.display = 'none';
       },
       (error) => {
-        spinner.style.display = 'none';
+        if (spinner) spinner.style.display = 'none';
         if (cityButton) cityButton.innerHTML = '📍 Select City';
         if (!auto) {
           const errorModal = new bootstrap.Modal(document.getElementById('locationErrorModal'));
@@ -449,8 +424,14 @@
     const cities = [
       { city: 'Jaipur', lat: 26.9124, lng: 75.7873 },
       { city: 'Delhi', lat: 28.6139, lng: 77.2090 },
-      { city: 'Mumbai', lat: 19.0760, lng: 72.8777 }
+      { city: 'Mumbai', lat: 19.0760, lng: 72.8777 },
+      { city: 'Bengaluru', lat: 12.9716, lng: 77.5946 },
+      { city: 'Chennai', lat: 13.0827, lng: 80.2707 },
+      { city: 'Hyderabad', lat: 17.3850, lng: 78.4867 },
+      { city: 'Kolkata', lat: 22.5726, lng: 88.3639 },
+      { city: 'Ahmedabad', lat: 23.0225, lng: 72.5714 }
     ];
+
     let nearest = null, minDist = Infinity;
     cities.forEach(c => {
       const dist = Math.sqrt((lat - c.lat) ** 2 + (lng - c.lng) ** 2);
@@ -462,12 +443,25 @@
     return nearest;
   }
 
-  // 🟠 Category Click Handler
+  function scrollToVendors() {
+    document.getElementById('popularVendors').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function scrollToFoodCategory() {
+    const target = document.getElementById("vendor-section");
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth" });
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
+    // ✅ Auto detect on page load
+    detectLocation(true);
+
+    // 🔘 Category filter
     document.querySelectorAll('.category').forEach(cat => {
       cat.addEventListener('click', () => {
         const foodKeyword = cat.getAttribute('data-food').toLowerCase();
-
         let scopedData = vendorData;
         if (selectedCity !== 'All Cities') {
           scopedData = vendorData.filter(v => v.city === selectedCity);
@@ -475,22 +469,20 @@
 
         if (foodKeyword === 'all') {
           filteredVendors = scopedData;
-          updateVendorDisplay(filteredVendors, `${selectedCity} - All Foods`);
         } else {
           filteredVendors = scopedData.filter(v =>
             v.name.toLowerCase().includes(foodKeyword) ||
             v.cuisine.toLowerCase().includes(foodKeyword)
           );
-          updateVendorDisplay(filteredVendors, `${selectedCity} - ${foodKeyword}`);
         }
 
         currentDisplayLimit = 6;
+        updateVendorDisplay(filteredVendors, `${selectedCity} - ${foodKeyword}`);
       });
     });
 
-    // 🟢 Auto-scroll for horizontal food categories
+    // 🔁 Horizontal scroll for food categories
     const container = document.getElementById("foodCategories");
-
     if (container) {
       let scrollStep = 1;
       let scrollInterval = setInterval(() => {
@@ -499,9 +491,8 @@
         } else {
           container.scrollLeft += scrollStep;
         }
-      }, 20); // Adjust for scroll speed
+      }, 20);
 
-      // Pause on hover/touch
       container.addEventListener("mouseenter", () => clearInterval(scrollInterval));
       container.addEventListener("mouseleave", () => {
         scrollInterval = setInterval(() => {
@@ -513,21 +504,39 @@
         }, 20);
       });
     }
-  });
 
-  function scrollToFoodCategory() {
-    const target = document.getElementById("vendor-section");
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth" });
-    }
-  }
+    // 🔍 Search bar handler
+    document.getElementById("searchBox").addEventListener("input", function () {
+      const query = this.value.toLowerCase();
+
+      let scopedData = vendorData;
+      if (selectedCity !== 'All Cities') {
+        scopedData = vendorData.filter(v => v.city === selectedCity);
+      }
+
+      filteredVendors = scopedData.filter(v =>
+        v.name.toLowerCase().includes(query) ||
+        v.cuisine.toLowerCase().includes(query) ||
+        v.city.toLowerCase().includes(query)
+      );
+
+      currentDisplayLimit = 6;
+      const title = query ? `Results for "${query}" in ${selectedCity}` : selectedCity;
+      updateVendorDisplay(filteredVendors, title);
+    });
+  });
 </script>
+
+
 
 
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAN1Y6DgLtlU24YTlp77O2gR_Lw4xiC03w&callback=initMap"></script>
+
+</body>
+</html>
 
 </body>
 </html>
